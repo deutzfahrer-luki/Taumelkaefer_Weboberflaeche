@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Spinne</title>
+    <link rel="stylesheet" href="joysticks/joysticks.css">
+    <link rel="stylesheet" href="Stream/stream.css">
+
+</head>
+
+<body>
+
+    <!-- Stream in der Mitte des Bildschirms -->
+    <div class="Stream"> 
+        <img id="mjpegStream" src="" width="50%" height="70%" />
+        <script src="settings/loadSettings.js"></script>
+    </div>
+
+    <!-- Linker Joystick -->
+    <div id="output-left" class="output">X: 0, Y: 0</div>
+    <div id="joystick-container-left" class="joystick-container">
+        <div id="joystick-left" class="joystick"></div>
+    </div>
+
+    <!-- Rechter Joystick -->
+    <div id="output-right" class="output">X: 0, Y: 0</div>
+    <div id="joystick-container-right" class="joystick-container">
+        <div id="joystick-right" class="joystick"></div>
+    </div>
+
+    <script src="joysticks/joysticks.js"></script>
+
+</body>
+</html>

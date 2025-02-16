@@ -1,0 +1,56 @@
+body {
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+    touch-action: none; /* Verhindert das Zoomen und Scrollen */
+}
+
+.joystick-container {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background-color: #ccc;
+    border-radius: 50%;
+}
+
+#joystick-container-left {
+    left: 5vw;
+    bottom: 5vh;
+}
+
+#joystick-container-right {
+    right: 5vw;
+    bottom: 5vh;
+}
+
+.joystick {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #333;
+    border-radius: 50%;
+    top: 75px;
+    left: 75px;
+    cursor: pointer;
+}
+
+.output {
+    font-size: 18px;
+    font-weight: bold;
+    position: absolute;
+    text-align: center;
+    width: 200px;
+}
+
+#output-left {
+    left: 5vw;
+    bottom: calc(5vh + 220px); /* über dem linken Joystick */
+}
+
+#output-right {
+    right: 5vw;
+    bottom: calc(5vh + 220px); /* über dem rechten Joystick */
+}
