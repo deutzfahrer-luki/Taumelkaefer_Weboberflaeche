@@ -1,4 +1,5 @@
-function initializeJoystick(joystickElement, containerElement, outputElement) {
+// Funktion zum Initialisieren des Joysticks
+function initializeJoystick(joystickElement, containerElement, onJoystickMoveCallback) {
     const containerRect = containerElement.getBoundingClientRect();
     const centerX = containerRect.width / 2;
     const centerY = containerRect.height / 2;
@@ -20,23 +21,23 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
         const xValue = Math.round((x / maxDistance) * 255);
         const yValue = Math.round((y / maxDistance) * 255);
 
-        outputElement.textContent = `X: ${xValue}, Y: ${yValue}`;
+        return [xValue, yValue]; // Return the joystick values as an array
     }
 
     // Setzt den Joystick in die Mitte zurück
     function resetJoystick() {
         joystickElement.style.transform = 'translate(0, 0)';
-        outputElement.textContent = 'X: 0, Y: 0';
+        return [0, 0]; // Return neutral position
     }
 
     // Touch Move (für Touchscreen)
     function handleTouchMove(e) {
         Array.from(e.touches).forEach(touch => {
             if (touches[touch.identifier]) {
-                const touchData = touches[touch.identifier];
                 const x = touch.clientX - containerRect.left - centerX;
                 const y = touch.clientY - containerRect.top - centerY;
-                handleMove(x, y);
+                const values = handleMove(x, y);
+                onJoystickMoveCallback(values); // Callback für die Werte
             }
         });
     }
@@ -46,7 +47,8 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
         if (isDragging) {
             const x = e.clientX - containerRect.left - centerX;
             const y = e.clientY - containerRect.top - centerY;
-            handleMove(x, y);
+            const values = handleMove(x, y);
+            onJoystickMoveCallback(values); // Callback für die Werte
         }
     }
 
@@ -56,7 +58,8 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
             touches[touch.identifier] = true;
             const x = touch.clientX - containerRect.left - centerX;
             const y = touch.clientY - containerRect.top - centerY;
-            handleMove(x, y);
+            const values = handleMove(x, y);
+            onJoystickMoveCallback(values); // Callback für die Werte
         });
     });
 
@@ -65,7 +68,8 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
         isDragging = true;
         const x = e.clientX - containerRect.left - centerX;
         const y = e.clientY - containerRect.top - centerY;
-        handleMove(x, y);
+        const values = handleMove(x, y);
+        onJoystickMoveCallback(values); // Callback für die Werte
     });
 
     // Global Touch Move und Mouse Move
@@ -77,7 +81,8 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
         Array.from(e.changedTouches).forEach(touch => {
             delete touches[touch.identifier];
             if (Object.keys(touches).length === 0) {
-                resetJoystick();
+                const values = resetJoystick();
+                onJoystickMoveCallback(values); // Callback für die Werte
             }
         });
     });
@@ -85,17 +90,36 @@ function initializeJoystick(joystickElement, containerElement, outputElement) {
     // Mouse Up
     window.addEventListener('mouseup', () => {
         isDragging = false;
-        resetJoystick();
+        const values = resetJoystick();
+        onJoystickMoveCallback(values); // Callback für die Werte
     });
+}
+
+
+// Funktion zum Aktualisieren des Outputs und der Konsole
+function updateOutput(values, outputElement, index) {
+    outputElement.textContent = `X: ${values[0]}, Y: ${values[1]}`;
+    console.log(`${index}:`, values); // Korrigierte Konsolenausgabe
 }
 
 // Initialisierung der Joysticks
 const joystickLeft = document.getElementById('joystick-left');
 const containerLeft = document.getElementById('joystick-container-left');
 const outputLeft = document.getElementById('output-left');
-initializeJoystick(joystickLeft, containerLeft, outputLeft);
 
 const joystickRight = document.getElementById('joystick-right');
 const containerRight = document.getElementById('joystick-container-right');
 const outputRight = document.getElementById('output-right');
-initializeJoystick(joystickRight, containerRight, outputRight);
+
+// Callback-Funktionen für die Joysticks
+function onJoystickMoveLeft(values) {
+    updateOutput(values, outputLeft, "left"); // Update left joystick output
+}
+
+function onJoystickMoveRight(values) {
+    updateOutput(values, outputRight, "right"); // Update right joystick output
+}
+
+// Joysticks initialisieren
+initializeJoystick(joystickLeft, containerLeft, onJoystickMoveLeft);
+initializeJoystick(joystickRight, containerRight, onJoystickMoveRight);
