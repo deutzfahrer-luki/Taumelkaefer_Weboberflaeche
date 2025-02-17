@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 TCP Steuerung</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>ESP32 Daten senden (TCP)</h1>
+    
+    <label for="dataInput">Daten eingeben (z. B. 140,150,200,255):</label>
+    <input type="text" id="dataInput" placeholder="Zahlen, durch Komma getrennt">
+    <button onclick="sendData()">Senden</button>
+
+    <div id="response"></div>
+
+    <script src="uart.js"></script>
+</body>
+</html>
