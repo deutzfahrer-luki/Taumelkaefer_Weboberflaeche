@@ -80,19 +80,38 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+class Stream:
+    def __init__(self, ip, port):
+        self.ip_ = ip
+        self.port_ = port
 
-config = ConfigLoader("settings/config.json")
-ip = config.get("ip")
-port = config.get("port_Stream")
+    def start(self):
+        picam2 = Picamera2()
+        picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+        output = StreamingOutput()
+        picam2.start_recording(JpegEncoder(), FileOutput(output))
+        try:
+            address = (self.ip_, self.port_)
+            server = StreamingServer(address, StreamingHandler)
+            server.serve_forever()
+        finally:
+            picam2.stop_recording()
 
-picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-output = StreamingOutput()
-picam2.start_recording(JpegEncoder(), FileOutput(output))
+   
 
-try:
-    address = (ip, port)
-    server = StreamingServer(address, StreamingHandler)
-    server.serve_forever()
-finally:
-    picam2.stop_recording()
+
+# config = ConfigLoader("settings/config.json")
+# ip = config.get("ip")
+# port = config.get("port_Stream")
+
+# picam2 = Picamera2()
+# picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+# output = StreamingOutput()
+# picam2.start_recording(JpegEncoder(), FileOutput(output))
+
+# try:
+#     address = (ip, port)
+#     server = StreamingServer(address, StreamingHandler)
+#     server.serve_forever()
+# finally:
+#     picam2.stop_recording()

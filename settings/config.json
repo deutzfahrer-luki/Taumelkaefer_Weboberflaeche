@@ -1,6 +1,8 @@
 {
     "ip_default": "10.10.10.1",
     "ip": "192.168.178.38", 
+    "dhcp_begin": "10",
+    "dhcp_end": "100",
     "port_UART": "5001", 
     "port_Stream": "7123",
     "port_Interface": "80"

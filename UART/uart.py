@@ -1,77 +1,66 @@
 import serial
-import socket
-import threading
 import time
-import websockets
 import asyncio
+import websockets
 
-# ---------- Konfiguration ----------
-HOST = '0.0.0.0'  # Der Server hört auf allen Schnittstellen
-PORT = 5001        # Der Port, den der WebSocket-Server verwenden soll
+class SerialWebSocketServer:
+    def __init__(self, serial_port='/dev/ttyS0', baudrate=9600, host='0.0.0.0', port=5001):
+        self.serial_port = serial_port
+        self.baudrate = baudrate
+        self.host = host
+        self.port = port
+        self.esp_serial = serial.Serial(self.serial_port, self.baudrate, timeout=1)
+        time.sleep(2)  # Wartezeit für die Initialisierung
 
-ESPserial = serial.Serial('/dev/ttyS0', 9600, timeout=1)  # UART0, 115200 Baud
+    def send_serial_data(self, data):
+        print("Sende Daten an ESP32")
+        self.esp_serial.write(data)
+        print(f"Gesendet: {list(data)}")
+        self.esp_serial.flush()
+        time.sleep(0.5)
 
-sendData = [140, 150, 200, 255]
-sendBytes = bytes(sendData)
+    def get_serial_data(self):
+        start_time = time.time()
+        while self.esp_serial.in_waiting < 4:
+            if time.time() - start_time > 2:  # Timeout nach 2 Sekunden
+                print("Keine Antwort erhalten")
+                return None
 
-time.sleep(2)
-
-def send_Serial_Data(data):
-    print("Func SendData")
-    ESPserial.write(data)
-    print(f"Gesendet: {list(data)}")
-    ESPserial.flush()
-    time.sleep(0.5)
-
-def get_Serial_Data():
-    start_time = time.time()
-    while ESPserial.in_waiting < 4:
-        if time.time() - start_time > 2:  # Timeout nach 2 sec
-            print("Keine Antwort erhalten")
-            return None  # Rückgabe von None, falls kein gültiges Paket empfangen wurde
-
-    if ESPserial.in_waiting >= 4:
-        recvData = ESPserial.read(4)
-        print(f"Empfangene Antwort: {list(recvData)}")
-        return recvData
-    else:
-        print("Fehlerhaft")
-        return None
-
-async def handle_client(websocket, path):
-    try:
-        print("Neue WebSocket-Verbindung von:", websocket.remote_address)
-
-        # Empfange Daten vom WebSocket-Client
-        data = await websocket.recv()
-        print(f"Empfangene Daten vom Client: {data}")  # Ausgabe der empfangenen Daten im Terminal
-
-        # Daten in Bytes umwandeln und an den ESP32 senden
-        numbers = list(map(int, data.split(',')))
-        sendBytes = bytes(numbers)
-        send_Serial_Data(sendBytes)
-
-        # Antwort vom ESP32 empfangen
-        response = get_Serial_Data()
-        if response is not None:
-            # Sende die Antwort an den WebSocket-Client zurück
-            await websocket.send(response)
+        if self.esp_serial.in_waiting >= 4:
+            recv_data = self.esp_serial.read(4)
+            print(f"Empfangene Antwort: {list(recv_data)}")
+            return recv_data
         else:
-            await websocket.send("ERROR: Keine Antwort vom ESP32")
+            print("Fehlerhaftes Paket erhalten")
+            return None
 
-    except Exception as e:
-        print(f"Fehler: {e}")
-        await websocket.send(f"ERROR: {str(e)}")
+    async def handle_client(self, websocket, path):
+        try:
+            print("Neue WebSocket-Verbindung von:", websocket.remote_address)
+            data = await websocket.recv()
+            print(f"Empfangene Daten vom Client: {data}")
 
-    finally:
-        print("Verbindung geschlossen")
-        await websocket.close()
+            # Eingehende Daten in Bytes konvertieren
+            numbers = list(map(int, data.split(',')))
+            send_bytes = bytes(numbers)
+            self.send_serial_data(send_bytes)
 
-async def start_server():
-    # Starte den WebSocket-Server auf dem Raspberry Pi
-    server = await websockets.serve(handle_client, HOST, PORT)
-    print(f"✅ WebSocket-Server läuft auf ws://{HOST}:{PORT}")
-    await server.wait_closed()
+            # Antwort vom ESP32 empfangen
+            response = self.get_serial_data()
+            if response is not None:
+                await websocket.send(response)
+            else:
+                await websocket.send("ERROR: Keine Antwort vom ESP32")
 
-if __name__ == "__main__":
-    asyncio.run(start_server())
+        except Exception as e:
+            print(f"Fehler: {e}")
+            await websocket.send(f"ERROR: {str(e)}")
+
+        finally:
+            print("Verbindung geschlossen")
+            await websocket.close()
+
+    async def start_server(self):
+        server = await websockets.serve(self.handle_client, self.host, self.port)
+        print(f"WebSocket-Server läuft auf ws://{self.host}:{self.port}")
+        await server.wait_closed()
