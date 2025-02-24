@@ -7,8 +7,14 @@ function sendData() {
         return;
     }
 
-    // TCP-Verbindung zum Raspberry Pi (mit WebSocket)
-    const socket = new WebSocket('ws://192.168.178.38:5001');  // Überprüfe die IP-Adresse hier
+    fetch('config.json')
+    .then(response => response.json())
+    .then(config => {
+        const socket = new WebSocket(`ws://${config.ip}:${config.port_UART}`);
+        console.log(`WebSocket verbunden mit: ws://${config.ip}:${config.port_UART}`);
+    })
+    .catch(error => console.error('Fehler beim Laden der Konfiguration:', error));
+
 
     socket.onopen = () => {
         console.log("Verbindung hergestellt");
