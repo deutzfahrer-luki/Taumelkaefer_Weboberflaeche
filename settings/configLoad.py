@@ -8,7 +8,6 @@ class ConfigLoader:
         self.data = self._load_config()
 
     def _load_config(self):
-        # Lädt die JSON-Datei und gibt sie als Dictionary zurück.
         try:
             with open(self.filename, "r") as file:
                 return json.load(file)
@@ -20,9 +19,15 @@ class ConfigLoader:
             return {}
 
     def get(self, key, default=None):
-        # Gibt einen Wert aus der Konfiguration zurück.
         return self.data.get(key, default)
+    
+    # def save_to_js(self, js_filename="config.js"):
+    #     ip = self.get("ip", "127.0.0.1")
+    #     js_content = f'const IP_ADDRESS = "{ip}";\nexport default IP_ADDRESS;'
 
-if __name__ == "__main__":
-    config = ConfigLoader()
-    print(config.get("ip"))
+    #     try:
+    #         with open(js_filename, "w") as js_file:
+    #             js_file.write(js_content)
+    #         print(f"{js_filename} wurde erfolgreich erstellt.")
+    #     except Exception as e:
+    #         print(f"Fehler beim Schreiben der JS-Datei: {e}")
