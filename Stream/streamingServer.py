@@ -1,8 +1,6 @@
-# Rui Santos & Sara Santos - Random Nerd Tutorials
 # Complete project details at https://RandomNerdTutorials.com/raspberry-pi-mjpeg-streaming-web-server-picamera2/
 
 # Mostly copied from https://picamera.readthedocs.io/en/release-1.13/recipes2.html
-# Run this script, then point a web browser at http:<this-ip-address>:7123
 # Note: needs simplejpeg to be installed (pip3 install simplejpeg).
 
 import io
@@ -14,6 +12,8 @@ from threading import Condition
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
+
+from settings.configLoad import ConfigLoader
 
 PAGE = """\
 <html>
@@ -36,7 +36,6 @@ class StreamingOutput(io.BufferedIOBase):
         with self.condition:
             self.frame = buf
             self.condition.notify_all()
-
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -77,11 +76,14 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_error(404)
             self.end_headers()
 
-
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+
+config = ConfigLoader("settings/config.json")
+ip = config.get("ip")
+port = config.get("port_Stream")
 
 picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
@@ -89,7 +91,7 @@ output = StreamingOutput()
 picam2.start_recording(JpegEncoder(), FileOutput(output))
 
 try:
-    address = ('', 7123)
+    address = (ip, port)
     server = StreamingServer(address, StreamingHandler)
     server.serve_forever()
 finally:

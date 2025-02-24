@@ -1,3 +1,6 @@
 {
-    "ip": "192.168.178.38"
+    "ip": "192.168.178.38", 
+    "port_UART": "5001", 
+    "port_Stream": "7123",
+    "port_Weboberflaeche": "80"
 }
