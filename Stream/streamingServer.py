@@ -13,8 +13,6 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 
-from settings.configLoad import ConfigLoader
-
 PAGE = """\
 <html>
 <head>
@@ -85,17 +83,27 @@ class Stream:
         self.ip_ = ip
         self.port_ = port
 
+class Stream:
+    def __init__(self, ip, port):
+        self.ip_ = ip
+        self.port_ = port
+
     def start(self):
+        global output
+        
         picam2 = Picamera2()
         picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+        
         output = StreamingOutput()
         picam2.start_recording(JpegEncoder(), FileOutput(output))
+        
         try:
-            address = (self.ip_, self.port_)
+            address = (self.ip_, int(self.port_))  # ✅ Ensure port is an int
             server = StreamingServer(address, StreamingHandler)
             server.serve_forever()
         finally:
             picam2.stop_recording()
+
 
    
 
