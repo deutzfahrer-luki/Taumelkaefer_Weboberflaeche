@@ -1,6 +1,6 @@
 from settings.configLoad import ConfigLoader
 from Stream.streamingServer import Stream
-from UART.uart import SerialWebSocketServer
+from UART.uartWebserverOld import SerialWebSocketServer
 import asyncio
 
 
