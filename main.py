@@ -24,5 +24,6 @@ uart = SerialWebSocketServer(host=IP, baudrate=115200, port=SERIAL_PORT, serial_
 # --------------------  main  -------------------- #
 if __name__ == "__main__":
     print(f"IP: {IP}, Webpage Port: {PORT_INTERFACE}, Stream: {PORT_STREAM}, UART Port: {PORT_UART}")
-    stream.start()
-    asyncio.run(uart.start_server())
+    # stream.start()
+    uart.send_serial_data("10")
+    # asyncio.run(uart.start_server())

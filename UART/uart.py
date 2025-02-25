@@ -1,66 +1,62 @@
 import serial
 import time
-import asyncio
-import websockets
 
-class SerialWebSocketServer:
-    def __init__(self, serial_port='/dev/ttyS0', baudrate=9600, host='0.0.0.0', port=5001):
-        self.serial_port = serial_port
-        self.baudrate = baudrate
-        self.host = host
-        self.port = port
-        self.esp_serial = serial.Serial(self.serial_port, self.baudrate, timeout=1)
-        time.sleep(2)  # Wartezeit für die Initialisierung
+SERIAL_PORT = "/dev/serial0"  # Oder "/dev/ttyS0"
+BAUDRATE = 115200
 
-    def send_serial_data(self, data):
-        print("Sende Daten an ESP32")
-        self.esp_serial.write(data)
-        print(f"Gesendet: {list(data)}")
-        self.esp_serial.flush()
-        time.sleep(0.5)
-
-    def get_serial_data(self):
-        start_time = time.time()
-        while self.esp_serial.in_waiting < 4:
-            if time.time() - start_time > 2:  # Timeout nach 2 Sekunden
-                print("Keine Antwort erhalten")
-                return None
-
-        if self.esp_serial.in_waiting >= 4:
-            recv_data = self.esp_serial.read(4)
-            print(f"Empfangene Antwort: {list(recv_data)}")
-            return recv_data
+class SerialInterface:
+    def __init__(self, SerialPort, Baudrate):
+        print("init UART (maybe Running)")
+        self.serialPort = SerialPort
+        self.bautrate = Baudrate
+        self.serial = serial.Serial(self.serialPort, self.bautrate, timeout=1)
+        print(f"start connection on {self.serialPort} with {self.bautrate}")
+        time.sleep(2)
+        
+    def sendData(self, data_array):
+        if not data_array:
+            print("Error: Data array is empty!")
+            return
         else:
-            print("Fehlerhaftes Paket erhalten")
-            return None
+            self.dataArray = data_array.copy()
+        
+        self.len = len(data_array)
+        
+        self.dataArray.insert(0, self.len)
+        
+        data_string = ",".join(map(str, self.dataArray)) + "\n"
+        
+        self.serial.write(data_string.encode())
+        self.serial.flush()
+        print(f"Sent: {data_string.strip()}")
 
-    async def handle_client(self, websocket, path):
-        try:
-            print("Neue WebSocket-Verbindung von:", websocket.remote_address)
-            data = await websocket.recv()
-            print(f"Empfangene Daten vom Client: {data}")
+    def close(self):
+        self.serial.close()
 
-            # Eingehende Daten in Bytes konvertieren
-            numbers = list(map(int, data.split(',')))
-            send_bytes = bytes(numbers)
-            self.send_serial_data(send_bytes)
+def serialTest(len):
+    for i in range(len):
+        Raspi.sendData([i,i,i,i])
+        time.sleep(0.3)
 
-            # Antwort vom ESP32 empfangen
-            response = self.get_serial_data()
-            if response is not None:
-                await websocket.send(response)
-            else:
-                await websocket.send("ERROR: Keine Antwort vom ESP32")
 
-        except Exception as e:
-            print(f"Fehler: {e}")
-            await websocket.send(f"ERROR: {str(e)}")
+Raspi = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
 
-        finally:
-            print("Verbindung geschlossen")
-            await websocket.close()
 
-    async def start_server(self):
-        server = await websockets.serve(self.handle_client, self.host, self.port)
-        print(f"WebSocket-Server läuft auf ws://{self.host}:{self.port}")
-        await server.wait_closed()
+try:
+    # Raspi.sendData([-255, 255, 255, 255])
+    serialTest(255)
+
+except serial.SerialException as e:
+    print(f"Fehler: {e}")
+
+finally:
+    Raspi.close()
+
+# from uart import *
+# import asyncio
+
+# SERIAL_PORT = "/dev/ttyS0"
+# uart = SerialWebSocketServer(host="172.16.15.68", baudrate=115200, port=7123, serial_port=SERIAL_PORT)
+
+# if __name__ == "__main__":
+#     uart.send_serial_data("10")
