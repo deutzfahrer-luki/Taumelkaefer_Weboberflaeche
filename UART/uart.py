@@ -14,35 +14,46 @@ class SerialInterface:
         time.sleep(2)
         
         
-    def init(self, ip):
-        self.serial.write(ip.encode())  # Umwandlung von String in Bytes    
-        self.serial.flush()
-        print(f"Initial Uart Send to Start the ESP32 on {ip}")
+    def initial(self, ip, timeout=10, delay=1):
+        start_time = time.time()
+        self.ipencoded = ip.encode()
 
-        while True:
-            if self.serial.in_waiting > 0:
-                response = self.serial.readline().decode().strip()
-                if response == "ACK":
-                    print("ESP32 hat die Initialisierung bestätigt.")
-                    break
-            time.sleep(0.1)
+        while time.time() - start_time < timeout:
+            # IP erneut senden, solange keine Antwort kommt
+            self.serial.write(self.ipencoded)  
+            self.serial.flush()
+            print(f"Initial UART Send to Start the ESP32 on {ip}")
+
+            # Warte auf Antwort
+            wait_start = time.time()
+            while time.time() - wait_start < 0.5:
+                if self.serial.in_waiting:  # Prüft, ob Daten verfügbar sind
+                    received_ip = self.serial.read(len(self.ipencoded))
+                    if received_ip == self.ipencoded:
+                        print(f"ESP32 antwortet mit der gleichen IP: {ip}")
+                        return ip  # Gibt die IP zurück, wenn sie übereinstimmt
+
+                time.sleep(delay)
+
+        print("Timeout erreicht. Keine Antwort vom ESP32 erhalten.")
+        return None  # Falls keine Antwort kam
         
     def sendData(self, data_array):
-        if not data_array:
-            print("Error: Data array is empty!")
+        if not data_array or len(data_array) != 4:
+            print("Error: Data array must have exactly 4 elements!")
             return
-        else:
-            self.dataArray = data_array.copy()
-        
-        self.len = len(data_array)
-        
-        self.dataArray.insert(0, self.len)
-        
-        data_string = ",".join(map(str, self.dataArray)) + "\n"
-        
+
+        data_to_send = data_array.copy()
+        data_len = len(data_to_send)
+        data_to_send.insert(0, data_len)  # Länge an den Anfang setzen
+        data_string = ",".join(map(str, data_to_send)) + "\n"
+
         self.serial.write(data_string.encode())
         self.serial.flush()
         print(f"Sent: {data_string.strip()}")
+
+        time.sleep(0.1)  # Wartezeit, um nicht zu oft zu senden
+
 
     def close(self):
         self.serial.close()
@@ -53,25 +64,18 @@ def serialTest(len):
         Raspi.sendData([i,i,i,i])
         time.sleep(0.3)
 
+# Test code
+# Raspi = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
+# Raspi.initial('172.16.15.68')
 
-Raspi = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
-Raspi.init('172.16.15.68')
+# try:
+#     # Raspi.sendData([-255, 255, 255, 255])
+#     serialTest(255)
 
-try:
-    # Raspi.sendData([-255, 255, 255, 255])
-    serialTest(255)
+# except serial.SerialException as e:
+#     print(f"Fehler: {e}")
 
-except serial.SerialException as e:
-    print(f"Fehler: {e}")
+# finally:
+#     Raspi.close()
 
-finally:
-    Raspi.close()
 
-# from uart import *
-# import asyncio
-
-# SERIAL_PORT = "/dev/ttyS0"
-# uart = SerialWebSocketServer(host="172.16.15.68", baudrate=115200, port=7123, serial_port=SERIAL_PORT)
-
-# if __name__ == "__main__":
-#     uart.send_serial_data("10")
