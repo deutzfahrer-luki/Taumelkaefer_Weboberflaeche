@@ -13,6 +13,20 @@ class SerialInterface:
         print(f"start connection on {self.serialPort} with {self.bautrate}")
         time.sleep(2)
         
+        
+    def init(self, ip):
+        self.serial.write(ip.encode())  # Umwandlung von String in Bytes    
+        self.serial.flush()
+        print(f"Initial Uart Send to Start the ESP32 on {ip}")
+
+        while True:
+            if self.serial.in_waiting > 0:
+                response = self.serial.readline().decode().strip()
+                if response == "ACK":
+                    print("ESP32 hat die Initialisierung bestätigt.")
+                    break
+            time.sleep(0.1)
+        
     def sendData(self, data_array):
         if not data_array:
             print("Error: Data array is empty!")
@@ -32,6 +46,7 @@ class SerialInterface:
 
     def close(self):
         self.serial.close()
+            
 
 def serialTest(len):
     for i in range(len):
@@ -40,7 +55,7 @@ def serialTest(len):
 
 
 Raspi = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
-
+Raspi.init('172.16.15.68')
 
 try:
     # Raspi.sendData([-255, 255, 255, 255])
