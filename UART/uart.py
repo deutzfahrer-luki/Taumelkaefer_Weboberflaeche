@@ -1,8 +1,7 @@
 import serial
 import time
-
-SERIAL_PORT = "/dev/serial0"  # Oder "/dev/ttyS0"
-BAUDRATE = 115200
+import asyncio
+import websockets
 
 class SerialInterface:
     def __init__(self, SerialPort, Baudrate):
@@ -57,25 +56,44 @@ class SerialInterface:
 
     def close(self):
         self.serial.close()
+
+class SerialInterfaceWebsocket:
+    def __init__(self, serial_interface, ip, port, update_callback):
+        self.serial_interface = serial_interface
+        self.ip = ip
+        self.port = port
+        self.update_callback = update_callback  # Callback zum Aktualisieren des dataArray
+
+    async def handle_client(self, websocket, path):
+        try:
+            print(f"Neue WebSocket-Verbindung von: {websocket.remote_address}")
             
+            async for message in websocket:
+                print(f"Empfangene Daten vom Client: {message}")
 
-def serialTest(len):
-    for i in range(len):
-        Raspi.sendData([i,i,i,i])
-        time.sleep(0.3)
+                try:
+                    # Erwartet werden vier kommagetrennte Zahlen
+                    numbers = list(map(int, message.split(",")))
+                    if len(numbers) != 4:
+                        await websocket.send("ERROR: Es müssen genau 4 Werte gesendet werden!")
+                        continue
 
-# Test code
-# Raspi = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
-# Raspi.initial('172.16.15.68')
+                    # Hier wird das Callback aufgerufen (Beispiel: Rückgabe des Arrays)
+                    updated_array = self.update_callback(*numbers)
 
-# try:
-#     # Raspi.sendData([-255, 255, 255, 255])
-#     serialTest(255)
+                    # Sende das Array (als JSON) zurück an den Client:
+                    await websocket.send(json.dumps(updated_array))
+                    
+                except ValueError:
+                    await websocket.send("ERROR: Ungültiges Format! Erwartet: '100,150,200,250'")
+        except Exception as e:
+            print(f"Fehler: {e}")
+            await websocket.send(f"ERROR: {str(e)}")
+        finally:
+            print("WebSocket-Verbindung geschlossen")
+            await websocket.close()
 
-# except serial.SerialException as e:
-#     print(f"Fehler: {e}")
-
-# finally:
-#     Raspi.close()
-
-
+    async def start_server(self):
+        server = await websockets.serve(self.handle_client, self.ip, self.port)
+        print(f"WebSocket-Server läuft auf ws://{self.ip}:{self.port}")
+        await server.wait_closed()

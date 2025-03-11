@@ -1,10 +1,11 @@
 import time
 import threading
+import asyncio
 from settings.configLoad import ConfigLoader
 from Stream.streamingServer import Stream
 from UART.uart import *
 
-# --------------------  Load settings  -------------------- #
+# --------------------  Einstellungen laden  -------------------- #
 config = ConfigLoader("settings/config.json")
 IP = config.get("ip")
 PORT_INTERFACE = config.get("port_Interface")
@@ -14,11 +15,12 @@ PORT_UART = config.get("port_UART")
 # --------------------  Stream  -------------------- #
 stream = Stream(IP, PORT_STREAM)
 
-# --------------------  UART interface  -------------------- #
+# --------------------  UART-Interface  -------------------- #
+BAUDRATE = 115200
 SERIAL_PORT = "/dev/ttyS0"
 Esp32_UART = SerialInterface(SerialPort=SERIAL_PORT, Baudrate=BAUDRATE)
 
-# --------------------  UART Data  -------------------- #
+# --------------------  UART-Daten & Synchronisation  -------------------- #
 dataArray = [255, 255, 255, 255]
 data_lock = threading.Lock()
 
@@ -36,28 +38,44 @@ def send_data_thread(serial_interface):
             serial_interface.sendData(dataArray)
         time.sleep(0.1)
 
+# --------------------  WebSocket-Server in eigenem Thread  -------------------- #
+def getDataWebsocket(a, b, c, d):
+    return [a, b, c, d]
+
+server = SerialInterfaceWebsocket(serial_interface=Esp32_UART, ip=IP, port=8765, update_callback=getDataWebsocket)
+
+def start_websocket_server():
+    ws_server = SerialInterfaceWebsocket(Esp32_UART, IP, PORT_UART)
+    asyncio.run(ws_server.start_server())
 
 # --------------------  Threads erstellen  -------------------- #
 stream_thread = threading.Thread(target=stream.start, daemon=True)
 send_thread = threading.Thread(target=send_data_thread, args=(Esp32_UART,), daemon=True)
+ws_thread = threading.Thread(target=start_websocket_server, daemon=True)
 
 # --------------------  Main  -------------------- #
 if __name__ == "__main__":
-    print(f"IP: {IP}, Webpage Port: {PORT_INTERFACE}, Stream: {PORT_STREAM}, UART Port: {PORT_UART}")
-
+    print(f"IP: {IP}, WebSocket Port: {PORT_INTERFACE}, Stream Port: {PORT_STREAM}, UART Port: {PORT_UART}")
     received_ip = Esp32_UART.initial(IP)
+    
+    while received_ip is None:
+        print("Warte auf gültige IP...")
+        time.sleep(1)
+        received_ip = Esp32_UART.initial(IP)
+    
     print(f"ESP32 hat folgende IP bestätigt: {received_ip}")
-    time.sleep(2)
-
-    # Starte Threads
+    
     stream_thread.start()
     send_thread.start()
+    ws_thread.start()
+
+    asyncio.run(server.start_server())
 
     try:
-        for i in range(256):
-            update_data(i, i, i, i)
-            time.sleep(0.1)
-
+        # Beispiel: Periodische Aktualisierung der Daten (Werte von 0 bis 255)
+        # for i in range(256):
+        #     update_data(i, i, i, i)
+        #     time.sleep(0.1)
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
