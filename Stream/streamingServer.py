@@ -91,7 +91,10 @@ class Stream:
     def start(self):
         global output
         
-        picam2 = Picamera2()
+        try:
+            picam2 = Picamera2()
+        except IndexError:
+            print("Camera not found or misconfigured.")
         picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
         
         output = StreamingOutput()

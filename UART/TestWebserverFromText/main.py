@@ -9,7 +9,7 @@ async def handler(websocket, path):
             
             # Überprüfe, ob genau 4 Zahlen empfangen wurden und alle 8-Bit sind
             if len(numbers) == 4 and all(0 <= num <= 255 for num in numbers):
-                print("Empfangene Zahlen:", numbers)
+                print("getnumbers:", numbers)
             else:
                 print("Fehlerhafte Daten empfangen:", message)
         except ValueError:

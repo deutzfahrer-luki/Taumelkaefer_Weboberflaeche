@@ -7,13 +7,16 @@ from GPIO.gpio import *
 class SerialInterface:
     def __init__(self, SerialPort, Baudrate):
         self.esp32_resetter = ESP32Resetter(reset_pin=17)  # Erstelle eine Instanz der Klasse
-
-        print("init UART (maybe Running)")
         self.serialPort = SerialPort
-        self.bautrate = Baudrate
-        self.serial = serial.Serial(self.serialPort, self.bautrate, timeout=1)
-        print(f"start connection on {self.serialPort} with {self.bautrate}")
-        time.sleep(2)
+        self.baudrate = Baudrate
+
+        try:
+            self.serial = serial.Serial(self.serialPort, self.baudrate, timeout=1)
+            print(f"Connection established on {self.serialPort} with baudrate {self.baudrate}")
+            time.sleep(2)
+        except serial.SerialException as e:
+            print(f"Error initializing serial port: {e}")
+            self.serial = None
         
         
     def initial(self, ip, timeout=10, delay=1):
@@ -70,33 +73,15 @@ class SerialInterfaceWebsocket:
         self.update_callback = update_callback  # Callback zum Aktualisieren des dataArray
 
     async def handle_client(self, websocket, path):
-        try:
-            print(f"Neue WebSocket-Verbindung von: {websocket.remote_address}")
-            
-            async for message in websocket:
-                print(f"Empfangene Daten vom Client: {message}")
-
-                try:
-                    # Erwartet werden vier kommagetrennte Zahlen
-                    numbers = list(map(int, message.split(",")))
-                    if len(numbers) != 4:
-                        await websocket.send("ERROR: Es müssen genau 4 Werte gesendet werden!")
-                        continue
-
-                    # Hier wird das Callback aufgerufen (Beispiel: Rückgabe des Arrays)
-                    updated_array = self.update_callback(*numbers)
-
-                    # Sende das Array (als JSON) zurück an den Client:
-                    await websocket.send(json.dumps(updated_array))
-                    
-                except ValueError:
-                    await websocket.send("ERROR: Ungültiges Format! Erwartet: '100,150,200,250'")
-        except Exception as e:
-            print(f"Fehler: {e}")
-            await websocket.send(f"ERROR: {str(e)}")
-        finally:
-            print("WebSocket-Verbindung geschlossen")
-            await websocket.close()
+        async for message in websocket:
+            try:
+                numbers = list(map(int, message.split(",")))
+                if len(numbers) == 4 and all(0 <= num <= 255 for num in numbers):
+                    print("getnumbers:", numbers)
+                else:
+                    print("Fehlerhafte Daten empfangen:", message)
+            except ValueError:
+                print("Ungültiges Format:", message)
 
     async def start_server(self):
         server = await websockets.serve(self.handle_client, self.ip, self.port)
