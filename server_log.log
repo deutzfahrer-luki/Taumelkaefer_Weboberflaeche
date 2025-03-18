@@ -1,9 +1,11 @@
-2025-03-18 22:42:59,398 - INFO - TestSkript Uart connection und Uart WebSocket gestartet
-2025-03-18 22:42:59,399 - INFO - Serielle Verbindung geöffnet: /dev/ttyS0 bei 115200 Baud.
-2025-03-18 22:42:59,401 - INFO - Starte WebSocket-Server und Datenüberwachung...
-2025-03-18 22:42:59,401 - INFO - Starte WebSocket-Server...
-2025-03-18 22:42:59,490 - INFO - Neue Daten empfangen: [0, 0, 0, 0]
-2025-03-18 22:42:59,490 - INFO - Gesendet an /dev/ttyS0 (ESP32): 4, 0, 0, 0, 0
-2025-03-18 22:42:59,591 - INFO - Antwort vom ESP32 erhalten: Daten empfangen: 4, 0, 0, 0, 0
-2025-03-18 22:42:59,592 - INFO - server listening on 192.168.1.114:8765
-2025-03-18 22:42:59,593 - INFO - WebSocket-Server läuft auf ws://192.168.1.114:8765
+2025-03-18 22:55:08,777 - INFO - TestSkript Uart connection und Uart WebSocket gestartet
+2025-03-18 22:55:08,778 - INFO - Serielle Verbindung geöffnet: /dev/ttyS0 bei 115200 Baud.
+2025-03-18 22:55:08,779 - INFO - Starte WebSocket-Server und Datenüberwachung...
+2025-03-18 22:55:08,779 - INFO - Starte WebSocket-Server...
+2025-03-18 22:55:08,845 - INFO - server listening on 192.168.1.114:8765
+2025-03-18 22:55:08,845 - INFO - WebSocket-Server läuft auf ws://192.168.1.114:8765
+2025-03-18 22:55:14,730 - INFO - connection open
+2025-03-18 22:55:16,944 - INFO - Empfangene Zahlen vom WebSocket: [255, 255, 255, 255]
+2025-03-18 22:55:16,966 - INFO - Neue Daten empfangen: [255, 255, 255, 255]
+2025-03-18 22:55:16,967 - INFO - Gesendet an /dev/ttyS0 (ESP32): 4, 255, 255, 255, 255
+2025-03-18 22:55:17,068 - INFO - Antwort vom ESP32 erhalten: Daten empfangen: 4, 255, 255, 255, 255

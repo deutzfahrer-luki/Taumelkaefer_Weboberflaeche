@@ -14,37 +14,50 @@ with open('server_log.log', 'w'):
 logging.basicConfig(filename='server_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("TestSkript Uart connection und Uart WebSocket gestartet")
 
-data = [255, 255, 255, 255]
-olddata = data
+class UartHandler:
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.se = SerialConnection(port='/dev/ttyS0', baudrate=115200)
+        self.web = UartWebsocket()
+        self.data = [0, 0, 0, 0]
+        self.olddata = self.data
+        
+    async def websocket_server(self):
+        """Startet den WebSocket-Server und protokolliert die Aktivität."""
+        logging.info("Starte WebSocket-Server...")
+        try:
+            async with websockets.serve(self.web.handler, "192.168.1.114", 8765):
+                logging.info("WebSocket-Server läuft auf ws://192.168.1.114:8765")
+                await asyncio.Future()  # Hält den Server am Laufen
+        except Exception as e:
+            logging.error(f"Fehler beim Starten des WebSocket-Servers: {e}")
 
-se = SerialConnection(port='/dev/ttyS0', baudrate=115200)
-web = UartWebsocket()
+    async def monitor_data(self):
+        """Überprüft kontinuierlich, ob sich die Daten geändert haben und protokolliert Änderungen."""
+        global data, olddata
+        while True:
+            self.data = self.web.getData()
+            if self.data != self.olddata:
+                logging.info(f"Neue Daten empfangen: {self.data}")
+                self.olddata = self.data
+                self.se.sendData(self.olddata)
+            await asyncio.sleep(0.1)
 
-async def websocket_server():
-    """Startet den WebSocket-Server und protokolliert die Aktivität."""
-    logging.info("Starte WebSocket-Server...")
-    try:
-        async with websockets.serve(web.handler, "192.168.1.114", 8765):
-            logging.info("WebSocket-Server läuft auf ws://192.168.1.114:8765")
-            await asyncio.Future()  # Hält den Server am Laufen
-    except Exception as e:
-        logging.error(f"Fehler beim Starten des WebSocket-Servers: {e}")
+    async def main(self):
+        """Startet sowohl den WebSocket-Server als auch die Datenüberwachung und protokolliert den Start."""
+        logging.info("Starte WebSocket-Server und Datenüberwachung...")
+        await asyncio.gather(self.websocket_server(), self.monitor_data())
+        
 
-async def monitor_data():
-    """Überprüft kontinuierlich, ob sich die Daten geändert haben und protokolliert Änderungen."""
-    global data, olddata
-    while True:
-        data = web.getData()
-        if data != olddata:
-            logging.info(f"Neue Daten empfangen: {data}")
-            olddata = data
-            se.sendData(olddata)
-        await asyncio.sleep(0.1)
+        
 
-async def main():
-    """Startet sowohl den WebSocket-Server als auch die Datenüberwachung und protokolliert den Start."""
-    logging.info("Starte WebSocket-Server und Datenüberwachung...")
-    await asyncio.gather(websocket_server(), monitor_data())
+
+
+
+UH = UartHandler(ip="192.168.1.114", port=8765)
+
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(UH.main())
