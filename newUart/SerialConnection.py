@@ -16,7 +16,6 @@ class SerialConnection:
             # for number in dataArray:
             self.serial.write(f"{dataString}\n".encode())
             time.sleep(0.5)
-            self.serial.write(b'\n')
             print("gesendet:", dataString)
         except Exception as e:
             print(f"Fehler beim Senden der Daten: {e}")
