@@ -2,9 +2,12 @@ import serial
 import time
 import asyncio
 import websockets
+from GPIO.gpio import *
 
 class SerialInterface:
     def __init__(self, SerialPort, Baudrate):
+        self.esp32_resetter = ESP32Resetter(reset_pin=17)  # Erstelle eine Instanz der Klasse
+
         print("init UART (maybe Running)")
         self.serialPort = SerialPort
         self.bautrate = Baudrate
@@ -21,6 +24,8 @@ class SerialInterface:
             # IP erneut senden, solange keine Antwort kommt
             self.serial.write(self.ipencoded)  
             self.serial.flush()
+            self.esp32_resetter.reset()
+
             print(f"Initial UART Send to Start the ESP32 on {ip}")
 
             # Warte auf Antwort

@@ -4,6 +4,7 @@ import asyncio
 from settings.configLoad import ConfigLoader
 from Stream.streamingServer import Stream
 from UART.uart import *
+from GPIO.gpio import *
 
 # --------------------  Einstellungen laden  -------------------- #
 config = ConfigLoader("settings/config.json")
@@ -53,12 +54,23 @@ stream_thread = threading.Thread(target=stream.start, daemon=True)
 send_thread = threading.Thread(target=send_data_thread, args=(Esp32_UART,), daemon=True)
 ws_thread = threading.Thread(target=start_websocket_server, daemon=True)
 
+# --------------------  GPIO settings  -------------------- #
+esp32_resetter = ESP32Resetter(reset_pin=17)  # Erstelle eine Instanz der Klasse
+
+
+
+
 # --------------------  Main  -------------------- #
 if __name__ == "__main__":
-    print(f"IP: {IP}, WebSocket Port: {PORT_INTERFACE}, Stream Port: {PORT_STREAM}, UART Port: {PORT_UART}")
-    received_ip = Esp32_UART.initial(IP)
-    
+    print(f"IP: {IP}, WebSocket Port: {PORT_INTERFACE}, Stream Port: {PORT_STREAM}, UART Port: {PORT_UART}")    
+    i = 0
+    received_ip = None
     while received_ip is None:
+        i = i + 1
+        if (i > 6):
+            i = 0
+            print("III")
+            esp32_resetter.reset()
         print("Warte auf gültige IP...")
         time.sleep(1)
         received_ip = Esp32_UART.initial(IP)
