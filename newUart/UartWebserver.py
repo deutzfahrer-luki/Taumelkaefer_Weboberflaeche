@@ -1,5 +1,6 @@
 import asyncio
 import websockets
+import logging
 
 class UartWebsocket:
     def __init__(self):
@@ -10,14 +11,11 @@ class UartWebsocket:
             try:
                 self.numbers = list(map(int, message.split(",")))
                 if len(self.numbers) == 4 and all(0 <= num <= 255 for num in self.numbers):
-                    print("getnumbers from Websocket:", self.numbers)
+                    logging.info(f"Empfangene Zahlen vom WebSocket: {self.numbers}")
                 else:
-                    print("Fehlerhafte Daten empfangen:", message)
+                    logging.warning(f"Fehlerhafte Daten empfangen: {message}")
             except ValueError:
-                print("Ungültiges Format:", message)
+                logging.warning(f"Ungültiges Format empfangen: {message}")
                 
     def getData(self):
-        return self.numbers            
-
-
-
+        return self.numbers
