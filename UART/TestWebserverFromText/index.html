@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h2>WebSocket Client</h2>
+    <input type="text" id="inputData" placeholder="Gib 4 Zahlen ein (0-255, Komma getrennt)">
+    <button onclick="sendData()">Daten senden</button>
+    <script>
+        const ws = new WebSocket("ws://172.16.15.68:8765");
+        
+        ws.onopen = () => {
+            console.log("WebSocket verbunden");
+        };
+
+        ws.onmessage = (event) => {
+            console.log("Server Antwort:", event.data);
+        };
+
+        function sendData() {
+            const inputElement = document.getElementById("inputData");
+            const inputValue = inputElement.value;
+            
+            // Prüfen, ob die Eingabe gültig ist
+            const numbers = inputValue.split(",").map(num => parseInt(num.trim()));
+            if (numbers.length === 4 && numbers.every(num => !isNaN(num) && num >= 0 && num <= 255)) {
+                ws.send(numbers.join(","));
+                console.log("Gesendet:", numbers);
+            } else {
+                alert("Bitte genau 4 gültige 8-Bit-Zahlen (0-255) eingeben, getrennt durch Kommas.");
+            }
+        }
+    </script>
+</body>
+</html>
