@@ -1,8 +1,11 @@
 import serial
 import time
+# from GPIOs.gpio import IOs
+
 
 class SerialConnection:
     def __init__(self, port, baudrate=115200):
+        self.port = port
         try:
             self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=1)
             print(f"Serielle Verbindung geöffnet: {port} bei {baudrate} Baud.")
@@ -13,10 +16,9 @@ class SerialConnection:
         dataArray = [len(dataArray)] + dataArray
         try:
             dataString = ', '.join(str(data) for data in dataArray)
-            # for number in dataArray:
             self.serial.write(f"{dataString}\n".encode())
             time.sleep(0.5)
-            print("gesendet:", dataString)
+            print(f"gesendet Daten an {self.port} (Esp32) :", dataString)
         except Exception as e:
             print(f"Fehler beim Senden der Daten: {e}")
 

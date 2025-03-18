@@ -10,7 +10,7 @@ class UartWebsocket:
             try:
                 self.numbers = list(map(int, message.split(",")))
                 if len(self.numbers) == 4 and all(0 <= num <= 255 for num in self.numbers):
-                    print("getnumbers:", self.numbers)
+                    print("getnumbers from Websocket:", self.numbers)
                 else:
                     print("Fehlerhafte Daten empfangen:", message)
             except ValueError:

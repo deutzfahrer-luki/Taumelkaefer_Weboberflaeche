@@ -2,8 +2,9 @@ import asyncio
 import websockets
 from SerialConnection import *
 from UartWebserver import *
+# from GPIOs.gpio import IOs
 
-print("Hallo World")
+print("TestSkript Uart connection and Uart Websoket")
 
 data = [255, 255, 255, 255]
 olddata = data
@@ -13,19 +14,19 @@ web = UartWebsocket()
 
 async def websocket_server():
     """Startet den WebSocket-Server."""
-    async with websockets.serve(web.handler, "172.16.15.68", 8765):
-        await asyncio.Future()  # Blockiert für immer (ersetzt run_forever())
+    async with websockets.serve(web.handler, "192.168.1.114", 8765):
+        await asyncio.Future()
 
 async def monitor_data():
     """Überprüft kontinuierlich, ob sich die Daten geändert haben."""
     global data, olddata
     while True:
-        data = web.getData()  # Falls es eine Methode ist, nutze web.getData()
+        data = web.getData()
         if data != olddata:
             print(data)
             olddata = data
             se.sendData(olddata)
-        await asyncio.sleep(0.1)  # Verhindert übermäßige CPU-Auslastung
+        await asyncio.sleep(0.1)
 
 async def main():
     """Startet sowohl den WebSocket-Server als auch die Datenüberwachung."""

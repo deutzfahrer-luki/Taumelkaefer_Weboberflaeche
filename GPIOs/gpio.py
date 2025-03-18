@@ -13,9 +13,6 @@ class ESP32Resetter:
         GPIO.setup(self.reset_pin, GPIO.OUT)
 
     def reset(self):
-        """
-        Setzt den ESP32 zurück, indem der EN-Pin auf LOW gezogen wird.
-        """
         print("ESP32 wird zurückgesetzt...")
         GPIO.output(self.reset_pin, GPIO.LOW)  # EN-Pin auf LOW setzen (Reset)
         time.sleep(0.1)  # Warten, damit der Reset durchführt werden kann
@@ -27,6 +24,21 @@ class ESP32Resetter:
         Setzt den GPIO-Pin auf den Ausgangszustand zurück.
         """
         GPIO.cleanup()
+        
+class IOs:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.pin, GPIO.OUT)
+        
+    def setState(self, state):
+        GPIO.output(self.pin, GPIO.HIGH if state else GPIO.LOW)
+        
+    def impuls(self, impulseDuration = 0.4, normalstate = 1):
+        GPIO.output(self.pin, GPIO.LOW if normalstate else GPIO.HIGH)
+        time.sleep(impulseDuration)
+        GPIO.output(self.pin, GPIO.HIGH if normalstate else GPIO.LOW)        
+                    
 
 # Beispielverwendung:
 # if __name__ == "__main__":
