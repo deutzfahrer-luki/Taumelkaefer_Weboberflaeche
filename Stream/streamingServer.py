@@ -1,25 +1,18 @@
-# Complete project details at https://RandomNerdTutorials.com/raspberry-pi-mjpeg-streaming-web-server-picamera2/
-
-# Mostly copied from https://picamera.readthedocs.io/en/release-1.13/recipes2.html
-# Note: needs simplejpeg to be installed (pip3 install simplejpeg).
-
 import io
 import logging
 import socketserver
+import asyncio
 from http import server
 from threading import Condition
-
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 
-PAGE = """\
+PAGE = """
 <html>
-<head>
-<title>picamera2 MJPEG streaming demo</title>
-</head>
+<head><title>Picamera2 MJPEG Streaming</title></head>
 <body>
-<h1>Picamera2 MJPEG Streaming Demo</h1>
+<h1>Picamera2 MJPEG Streaming</h1>
 <img src="stream.mjpg" width="640" height="480" />
 </body>
 </html>
@@ -29,7 +22,8 @@ class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
         self.condition = Condition()
-
+        logging.info("StreamingOutput initialized.")
+    
     def write(self, buf):
         with self.condition:
             self.frame = buf
@@ -37,6 +31,7 @@ class StreamingOutput(io.BufferedIOBase):
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
+        logging.info(f"Received GET request: {self.path}")
         if self.path == '/':
             self.send_response(301)
             self.send_header('Location', '/index.html')
@@ -50,7 +45,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.wfile.write(content)
         elif self.path == '/stream.mjpg':
             self.send_response(200)
-            self.send_header('Age', 0)
             self.send_header('Cache-Control', 'no-cache, private')
             self.send_header('Pragma', 'no-cache')
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
@@ -67,12 +61,11 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.wfile.write(frame)
                     self.wfile.write(b'\r\n')
             except Exception as e:
-                logging.warning(
-                    'Removed streaming client %s: %s',
-                    self.client_address, str(e))
+                logging.warning(f'Removed streaming client {self.client_address}: {e}')
         else:
             self.send_error(404)
             self.end_headers()
+            logging.warning(f"404 Not Found: {self.path}")
 
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
@@ -80,49 +73,32 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 class Stream:
     def __init__(self, ip, port):
-        self.ip_ = ip
-        self.port_ = port
+        self.ip = ip
+        self.port = port
+        self.picam2 = None
+        self.server = None
 
-class Stream:
-    def __init__(self, ip, port):
-        self.ip_ = ip
-        self.port_ = port
-
-    def start(self):
+    async def start(self):
         global output
-        
-        try:
-            picam2 = Picamera2()
-        except IndexError:
-            print("Camera not found or misconfigured.")
-        picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-        
+
+        logging.info("Starting Picamera2...")
+        self.picam2 = Picamera2()
+        self.picam2.configure(self.picam2.create_video_configuration(main={"size": (640, 480)}))
         output = StreamingOutput()
-        picam2.start_recording(JpegEncoder(), FileOutput(output))
+        self.picam2.start_recording(JpegEncoder(), FileOutput(output))
+
+        address = (self.ip, int(self.port))
+        self.server = StreamingServer(address, StreamingHandler)
+
+        logging.info(f"Streaming Server läuft auf http://{self.ip}:{self.port}")
         
-        try:
-            address = (self.ip_, int(self.port_))  # ✅ Ensure port is an int
-            server = StreamingServer(address, StreamingHandler)
-            server.serve_forever()
-        finally:
-            picam2.stop_recording()
-
-
-   
-
-
-# config = ConfigLoader("settings/config.json")
-# ip = config.get("ip")
-# port = config.get("port_Stream")
-
-# picam2 = Picamera2()
-# picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-# output = StreamingOutput()
-# picam2.start_recording(JpegEncoder(), FileOutput(output))
-
-# try:
-#     address = (ip, port)
-#     server = StreamingServer(address, StreamingHandler)
-#     server.serve_forever()
-# finally:
-#     picam2.stop_recording()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self.server.serve_forever)
+    
+    async def stop(self):
+        logging.info("Stopping Picamera2...")
+        if self.picam2:
+            self.picam2.stop_recording()
+        if self.server:
+            self.server.shutdown()
+        logging.info("Stream stopped.")

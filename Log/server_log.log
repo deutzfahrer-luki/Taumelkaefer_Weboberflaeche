@@ -1,0 +1,18 @@
+2025-03-19 14:19:56,030 - INFO - TestSkript Uart connection und Uart WebSocket gestartet
+2025-03-19 14:19:57,033 - INFO - Serielle Verbindung geöffnet: /dev/ttyS0 bei 115200 Baud.
+2025-03-19 14:19:57,034 - INFO - Starte Server mit IP: 192.168.1.114, WebSocket Port: 80, Stream Port: 7123, UART Port: 8765
+2025-03-19 14:19:57,034 - INFO - Starting Picamera2...
+2025-03-19 14:19:57,066 - INFO - Initialization successful.
+2025-03-19 14:19:57,066 - INFO - Camera now open.
+2025-03-19 14:19:57,073 - INFO - Configuration successful!
+2025-03-19 14:19:57,082 - INFO - StreamingOutput initialized.
+2025-03-19 14:19:57,177 - INFO - Camera started
+2025-03-19 14:19:57,220 - INFO - Streaming Server läuft auf http://192.168.1.114:7123
+2025-03-19 14:19:57,222 - INFO - Starte WebSocket-Server und Datenüberwachung...
+2025-03-19 14:19:57,265 - INFO - Starte WebSocket-Server...
+2025-03-19 14:19:57,268 - INFO - server listening on 192.168.1.114:5678
+2025-03-19 14:19:57,268 - INFO - WebSocket-Server Log läuft auf ws://192.168.1.114:5678
+2025-03-19 14:19:57,268 - INFO - server listening on 192.168.1.114:8765
+2025-03-19 14:19:57,269 - INFO - WebSocket-Server läuft auf ws://192.168.1.114:8765
+2025-03-19 14:20:01,297 - INFO - connection open
+2025-03-19 14:20:09,718 - INFO - Received GET request: /stream.mjpg

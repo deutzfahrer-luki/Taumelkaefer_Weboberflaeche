@@ -4,10 +4,10 @@ import asyncio
 
 print("TestSkript Uart connection and Uart WebSocket")
 
-with open('server_log.log', 'w'): 
+with open('Log/server_log.log', 'w'): 
     pass
 
-logging.basicConfig(filename='server_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='Log/server_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("TestSkript Uart connection und Uart WebSocket gestartet")
 
 UH = UartWebsocketHandler(ip="192.168.1.114", port=8765, rstPin=18)

@@ -1,7 +1,7 @@
 import asyncio
 import websockets
-from SerialConnection import *
-from UartWebserver import *
+from .SerialConnection import *
+from .UartWebserver import *
 import logging
 
 class UartWebsocketHandler:
@@ -18,12 +18,10 @@ class UartWebsocketHandler:
     async def websocket_server(self):
         """Startet den WebSocket-Server."""
         logging.info("Starte WebSocket-Server...")
-        try:
-            self.server = await websockets.serve(self.web.handler, self.ip, self.port)
-            logging.info(f"WebSocket-Server läuft auf ws://{self.ip}:{self.port}")
-            await asyncio.Future()  # Hält den Server am Laufen
-        except Exception as e:
-            logging.error(f"Fehler beim Starten des WebSocket-Servers: {e}")
+        self.server = await websockets.serve(self.web.handler, self.ip, self.port)
+        logging.info(f"WebSocket-Server läuft auf ws://{self.ip}:{self.port}")
+        await asyncio.Future()  # Hält den Server am Laufen
+
 
     async def monitor_data(self):
         """Überprüft kontinuierlich, ob sich die Daten geändert haben."""
@@ -37,7 +35,7 @@ class UartWebsocketHandler:
                     self.resultuion = self.se.sendData(self.olddata)
             await asyncio.sleep(0.1)
 
-    async def main(self):
+    async def start(self):
         """Startet WebSocket-Server und Datenüberwachung."""
         logging.info("Starte WebSocket-Server und Datenüberwachung...")
         await asyncio.gather(self.websocket_server(), self.monitor_data())
