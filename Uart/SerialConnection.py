@@ -44,15 +44,12 @@ class SerialConnection:
         """Sendet Daten an das ESP32 über die serielle Verbindung und erwartet eine Antwort."""
         dataArray = [len(dataArray)] + dataArray
         try:
-            # Umwandeln der Array-Daten in ein String-Format
             self.dataString = ', '.join(str(data) for data in dataArray)
             self.serial.write(f"{self.dataString}\n".encode())
             logging.info(f"Gesendet an {self.port} (ESP32): {self.dataString}")
-
-            # Warten auf Antwort vom ESP32
             response = self.waitForResponse()
-            logging.info(f"Antwort vom ESP32 erhalten (raw): {repr(response)}")
-            logging.info(f"Gesendete Daten (raw): {repr(self.dataString)}")
+            # logging.info(f"Antwort vom ESP32 erhalten (raw): {repr(response)}")
+            # logging.info(f"Gesendete Daten (raw): {repr(self.dataString)}")
 
             if response and response.strip() == self.dataString.strip():
                 logging.info(f"Antwort vom ESP32 erhalten: {response}")
