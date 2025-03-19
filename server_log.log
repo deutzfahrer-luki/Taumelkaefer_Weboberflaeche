@@ -1,11 +1,14 @@
-2025-03-18 22:55:08,777 - INFO - TestSkript Uart connection und Uart WebSocket gestartet
-2025-03-18 22:55:08,778 - INFO - Serielle Verbindung geöffnet: /dev/ttyS0 bei 115200 Baud.
-2025-03-18 22:55:08,779 - INFO - Starte WebSocket-Server und Datenüberwachung...
-2025-03-18 22:55:08,779 - INFO - Starte WebSocket-Server...
-2025-03-18 22:55:08,845 - INFO - server listening on 192.168.1.114:8765
-2025-03-18 22:55:08,845 - INFO - WebSocket-Server läuft auf ws://192.168.1.114:8765
-2025-03-18 22:55:14,730 - INFO - connection open
-2025-03-18 22:55:16,944 - INFO - Empfangene Zahlen vom WebSocket: [255, 255, 255, 255]
-2025-03-18 22:55:16,966 - INFO - Neue Daten empfangen: [255, 255, 255, 255]
-2025-03-18 22:55:16,967 - INFO - Gesendet an /dev/ttyS0 (ESP32): 4, 255, 255, 255, 255
-2025-03-18 22:55:17,068 - INFO - Antwort vom ESP32 erhalten: Daten empfangen: 4, 255, 255, 255, 255
+2025-03-19 08:38:13,100 - INFO - TestSkript Uart connection und Uart WebSocket gestartet
+2025-03-19 08:38:14,103 - INFO - Serielle Verbindung geöffnet: /dev/ttyS0 bei 115200 Baud.
+2025-03-19 08:38:14,105 - INFO - Starte WebSocket-Server und Datenüberwachung...
+2025-03-19 08:38:14,106 - INFO - Starte WebSocket-Server...
+2025-03-19 08:38:14,198 - INFO - server listening on 192.168.1.114:8765
+2025-03-19 08:38:14,198 - INFO - WebSocket-Server läuft auf ws://192.168.1.114:8765
+2025-03-19 08:38:52,508 - INFO - Async-Task wurde abgebrochen.
+2025-03-19 08:38:52,508 - INFO - Fahre System herunter...
+2025-03-19 08:38:52,509 - INFO - server closing
+2025-03-19 08:38:52,509 - INFO - server closed
+2025-03-19 08:38:52,509 - INFO - WebSocket-Server gestoppt.
+2025-03-19 08:38:52,510 - INFO - Serielle Verbindung geschlossen.
+2025-03-19 08:38:52,511 - INFO - UART Connection geschlossen und ESP ausgeschaltet über Enable
+2025-03-19 08:38:52,511 - INFO - Shutdown abgeschlossen.

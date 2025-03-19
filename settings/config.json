@@ -1,9 +1,10 @@
 {
     "ip_default": "10.10.10.1",
-    "ip": "172.16.15.68", 
+    "ip": "192.168.1.114", 
     "dhcp_begin": "10",
     "dhcp_end": "100",
-    "port_UART": "5001", 
+    "port_UART": "8765", 
     "port_Stream": "7123",
-    "port_Interface": "80"
+    "port_Interface": "80",
+    "esp32_GPIO_RST" : 18
 }
