@@ -1,2 +1,4 @@
 *.pyc
 __pycache__/
+VL53L0X-python/
+myenv/
